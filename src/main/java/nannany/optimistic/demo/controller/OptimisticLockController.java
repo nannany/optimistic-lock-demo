@@ -1,6 +1,5 @@
 package nannany.optimistic.demo.controller;
 
-import com.google.common.hash.Hashing;
 import nannany.optimistic.demo.EntityToResultMapper;
 import nannany.optimistic.demo.RequestToEntityMapper;
 import nannany.optimistic.demo.infra.DemoDataEntity;
@@ -13,7 +12,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static nannany.optimistic.demo.util.DemoUtils.*;
 
 @RestController
 @RequestMapping("optimistic")
@@ -63,8 +62,7 @@ public class OptimisticLockController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        @SuppressWarnings("UnstableApiUsage")
-        var calculatedEtag = Hashing.sha256().hashString(dde.get().toString(), UTF_8).toString();
+        String calculatedEtag = getHash(dde.get().toString());
         if (!etag.equals(calculatedEtag)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
