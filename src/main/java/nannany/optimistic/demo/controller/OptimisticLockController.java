@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +43,7 @@ public class OptimisticLockController {
 
     @Transactional
     @PutMapping("/etag/{id}")
-    public void update(@PathVariable Integer id, @RequestBody UpdateRequestBody body, @RequestHeader("Etag") String etag) {
+    public void updateEtag(@PathVariable Integer id, @RequestBody UpdateRequestBody body, @RequestHeader("Etag") String etag) {
 
         checkForOptimisticLock(id, etag);
 
@@ -67,4 +69,22 @@ public class OptimisticLockController {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
     }
+
+    @GetMapping("/lastModify")
+    public List<NormalResult> getLastModify(HttpServletResponse response) {
+        response.addHeader("Last-Modified", String.valueOf(new Timestamp(System.currentTimeMillis())));
+        return entityToResultMapper.entitiesToResults(demoDataRepository.findAll());
+    }
+
+//    @Transactional
+//    @PutMapping("/lastModify/{id}")
+//    public void updateLastModify(@PathVariable Integer id, @RequestBody UpdateRequestBody body, @RequestHeader("Etag") String etag) {
+//
+//        checkForOptimisticLock(id, etag);
+//
+//        DemoDataEntity updateEntity = requestToEntityMapper.translate(body);
+//        updateEntity.setId(id);
+//
+//        demoDataRepository.save(updateEntity);
+//    }
 }
