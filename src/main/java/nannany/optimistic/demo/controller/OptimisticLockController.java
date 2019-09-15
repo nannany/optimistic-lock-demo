@@ -29,8 +29,8 @@ public class OptimisticLockController {
         return entityToResultMapper.entitiesToResults(demoDataRepository.findAll());
     }
 
-//    @GetMapping("/etag")
-//    public List<IncludeEtagResult> getEtag() {
-//        return entityToResultMapper.entitiesToIncludeEtagResults(demoDataRepository.findAll());
-//    }
+    @GetMapping("/etag")
+    public List<IncludeEtagResult> getEtag() {
+        return entityToResultMapper.entitiesToIncludeEtagResults(demoDataRepository.findAll());
+    }
 }
