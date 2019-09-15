@@ -21,8 +21,8 @@ public class DemoDataEntity {
     String firstName;
     String lastName;
     String career;
-    Timestamp updateDate;
-    Timestamp insertDate;
+    Timestamp updateTime;
+    Timestamp insertTime;
 
 
 }
