@@ -1,17 +1,13 @@
 package nannany.optimistic.demo.controller;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonSerialize
-public class Result {
+public class IncludeEtagResult {
 
     Integer id;
     String firstName;
@@ -19,4 +15,5 @@ public class Result {
     String career;
     Timestamp updateTime;
     Timestamp insertTime;
+    String etag;
 }

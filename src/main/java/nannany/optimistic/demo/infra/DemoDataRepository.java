@@ -1,10 +1,7 @@
 package nannany.optimistic.demo.infra;
 
-import nannany.optimistic.demo.controller.Result;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface DemoDataRepository extends JpaRepository<DemoDataEntity, Integer> {
