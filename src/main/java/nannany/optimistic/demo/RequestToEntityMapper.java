@@ -11,6 +11,5 @@ import java.sql.Timestamp;
 public interface RequestToEntityMapper {
 
     @Mapping(target = "updateTime", expression = "java(new Timestamp(System.currentTimeMillis()))")
-    @Mapping(target = "insertTime", expression = "java(new Timestamp(System.currentTimeMillis()))")
     DemoDataEntity translate(UpdateRequestBody updateRequestBody);
 }

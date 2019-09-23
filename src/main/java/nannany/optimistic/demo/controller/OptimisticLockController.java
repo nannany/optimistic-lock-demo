@@ -45,15 +45,16 @@ public class OptimisticLockController {
     @PutMapping("/etag/{id}")
     public void updateEtag(@PathVariable Integer id, @RequestBody UpdateRequestBody body, @RequestHeader("Etag") String etag) {
 
-        checkForOptimisticLock(id, etag);
+        DemoDataEntity prevDemoDataEntity = checkForOptimisticLock(id, etag);
 
         DemoDataEntity updateEntity = requestToEntityMapper.translate(body);
+        updateEntity.setInsertTime(prevDemoDataEntity.getInsertTime());
         updateEntity.setId(id);
 
         demoDataRepository.save(updateEntity);
     }
 
-    private void checkForOptimisticLock(Integer id, String etag) {
+    private DemoDataEntity checkForOptimisticLock(Integer id, String etag) {
         Optional<DemoDataEntity> dde = demoDataRepository.findById(id);
 
         if (dde.isEmpty()) {
@@ -68,6 +69,8 @@ public class OptimisticLockController {
         if (!etag.equals(calculatedEtag)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
+
+        return dde.get();
     }
 
     @GetMapping("/lastModify")
@@ -76,15 +79,40 @@ public class OptimisticLockController {
         return entityToResultMapper.entitiesToResults(demoDataRepository.findAll());
     }
 
-//    @Transactional
-//    @PutMapping("/lastModify/{id}")
-//    public void updateLastModify(@PathVariable Integer id, @RequestBody UpdateRequestBody body, @RequestHeader("Etag") String etag) {
-//
-//        checkForOptimisticLock(id, etag);
-//
-//        DemoDataEntity updateEntity = requestToEntityMapper.translate(body);
-//        updateEntity.setId(id);
-//
-//        demoDataRepository.save(updateEntity);
-//    }
+    @Transactional
+    @PutMapping("/lastModify/{id}")
+    public void updateLastModify(@PathVariable Integer id, @RequestBody UpdateRequestBody body, @RequestHeader("If-Unmodified-Since") String ifUnmodifiedSince) {
+        Timestamp ifUnmodifiedSinceTimestamp;
+        try {
+            ifUnmodifiedSinceTimestamp = Timestamp.valueOf(ifUnmodifiedSince);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Illegal If-Unmodified-Since header", e);
+        }
+        DemoDataEntity prevDemoDataEntity = checkForOptimisticLockLastModify(id, ifUnmodifiedSinceTimestamp);
+
+        DemoDataEntity updateEntity = requestToEntityMapper.translate(body);
+        updateEntity.setInsertTime(prevDemoDataEntity.getInsertTime());
+        updateEntity.setId(id);
+
+        demoDataRepository.save(updateEntity);
+    }
+
+    private DemoDataEntity checkForOptimisticLockLastModify(Integer id, Timestamp ifUnmodifiedSince) {
+        Optional<DemoDataEntity> dde = demoDataRepository.findById(id);
+
+        if (dde.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        if (ifUnmodifiedSince == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        Timestamp lastUpdateTime = dde.get().getUpdateTime();
+        if (lastUpdateTime.after(ifUnmodifiedSince)) {
+            throw new ResponseStatusException(HttpStatus.PRECONDITION_FAILED);
+        }
+
+        return dde.get();
+    }
 }
